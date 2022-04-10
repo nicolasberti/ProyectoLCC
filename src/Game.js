@@ -23,6 +23,9 @@ export function colorToCss(color) {
   }
   return color;
 }
+
+
+
 class Game extends React.Component {
 
   pengine;
@@ -31,9 +34,12 @@ class Game extends React.Component {
     super(props);
     this.state = {
       turns: 0,
+      origenFila: 0,
+      origenColumna: 0,
       grid: null,
       complete: false,  // true if game is complete, false otherwise
-      waiting: false
+      waiting: false,
+      selecciono: false // true si selecciono la celda de origen
     };
     this.handleClick = this.handleClick.bind(this);
     this.handlePengineCreate = this.handlePengineCreate.bind(this);
@@ -50,6 +56,8 @@ class Game extends React.Component {
       }
     });
   }
+
+  
 
   handleClick(color) {
     // No action on click if game is complete or we are waiting.
@@ -93,31 +101,60 @@ class Game extends React.Component {
     });
   }
 
+  clickOrigen(i, j){
+    alert(i + " " + j);
+  }
+
   render() {
     if (this.state.grid === null) {
       return null;
     }
-    return (
-      <div className="game">
-        <div className="leftPanel">
-          <div className="buttonsPanel">
-            {colors.map(color =>
-              <button
-                className="colorBtn"
-                style={{ backgroundColor: colorToCss(color) }}
-                onClick={() => this.handleClick(color)}
-                key={color}
-              />)}
+      return (
+        <div className="game">
+          <div className="leftPanel">
+            <div className="buttonsPanel">
+              {colors.map(color =>
+                <button
+                  className="colorBtn"
+                  style={{ backgroundColor: colorToCss(color) }}
+                  onClick={() => this.handleClick(color)}
+                  key={color}
+                />)}
+            </div>
+            <div className="turnsPanel">
+              <div className="turnsLab">Turns</div>
+              <div className="turnsNum">{this.state.turns}</div>
+            </div>
           </div>
-          <div className="turnsPanel">
-            <div className="turnsLab">Turns</div>
-            <div className="turnsNum">{this.state.turns}</div>
-          </div>
+
+          <Board grid={this.state.grid} ref="tablero"/>
+
         </div>
-        <Board grid={this.state.grid} />
-      </div>
-    );
+      );
   }
+
+  /*
+
+    Codigo para apretar en cualquier celda y que te llame a la funcion "clickOrigen".
+    En dicha funcion establezco el codigo para setear la celda origen.
+
+    ¿Como hacerlo directamente en el board? Llamar a una funcion interna de Game.js en Square.js? preguntar en la practica
+
+    <div className="tablero">
+                
+                  <div className="board">
+                        {this.state.grid.map((row, i) =>
+                            row.map((cell, j) =>
+                                <div onClick={() => this.clickOrigen(i, j)}style={{ backgroundColor: colorToCss(cell) }} />
+                            )
+                        )}
+                    </div>
+
+          </div>
+
+  */
+
 }
+
 
 export default Game;

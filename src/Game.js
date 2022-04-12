@@ -102,13 +102,22 @@ class Game extends React.Component {
   }
 
   clickOrigen(i, j){
-    alert(i + " " + j);
+    if(this.state.selecciono === false) {
+      this.setState({ 
+        origenFila: i,
+        origenColumna: j,
+        selecciono: true
+      });
+    }
+    alert("Celda clickeada: " + i + " " + j);
   }
 
   render() {
     if (this.state.grid === null) {
       return null;
     }
+
+    if(this.state.selecciono === true) {
       return (
         <div className="game">
           <div className="leftPanel">
@@ -127,32 +136,21 @@ class Game extends React.Component {
             </div>
           </div>
 
-          <Board grid={this.state.grid} ref="tablero"/>
+          <Board grid={this.state.grid} onClick={(i,j) => this.clickOrigen(i,j)}/>
 
         </div>
       );
+    } else{
+      return(
+      <div className="game">
+         
+         <center>Para comenzar, selecciona una celda de origen. (Desde donde se pintará)
+          <Board grid={this.state.grid} onClick={(i,j) => this.clickOrigen(i,j)}/>
+          </center>
+        </div>
+      );
+    }
   }
-
-  /*
-
-    Codigo para apretar en cualquier celda y que te llame a la funcion "clickOrigen".
-    En dicha funcion establezco el codigo para setear la celda origen.
-
-    ¿Como hacerlo directamente en el board? Llamar a una funcion interna de Game.js en Square.js? preguntar en la practica
-
-    <div className="tablero">
-                
-                  <div className="board">
-                        {this.state.grid.map((row, i) =>
-                            row.map((cell, j) =>
-                                <div onClick={() => this.clickOrigen(i, j)}style={{ backgroundColor: colorToCss(cell) }} />
-                            )
-                        )}
-                    </div>
-
-          </div>
-
-  */
 
 }
 

@@ -3,16 +3,11 @@ import { colorToCss } from './Game';
 
 class Square extends React.Component {
 
-    constructor(props) {
-        super(props);
-        this.fila = 0;
-        this.columna = 0;
-    }
-
-    // 
     render() {
         return (
-            <div style={{ backgroundColor: colorToCss(this.props.value) }} />
+            <div 
+            onClick={this.props.onClick}
+            style={{ backgroundColor: colorToCss(this.props.value) }} />
         );
     }
 }

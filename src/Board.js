@@ -8,7 +8,10 @@ class Board extends React.Component {
             <div className="board">
                 {this.props.grid.map((row, i) =>
                     row.map((cell, j) =>
-                        <Square value={cell}  fila = {i} columna = {j} key={i + "." + j} />
+                        <Square 
+                        onClick={() => this.props.onClick(i,j)}
+                        value={cell}
+                        key={i + "." + j} />
                     )
                 )}
             </div>

@@ -34,9 +34,12 @@ class Game extends React.Component {
     super(props);
     this.state = {
       turns: 0,
+      adyacentes: 0,
+      origenColor: null,
       origenFila: 0,
       origenColumna: 0,
       grid: null,
+      jugadas: "",
       complete: false,  // true if game is complete, false otherwise
       waiting: false,
       selecciono: false // true si selecciono la celda de origen
@@ -53,7 +56,8 @@ class Game extends React.Component {
         this.setState({
           grid: response['Grid']
         });
-      }
+        
+      } 
     });
   }
 
@@ -61,7 +65,11 @@ class Game extends React.Component {
 
   handleClick(color) {
     // No action on click if game is complete or we are waiting.
-    if (this.state.complete || this.state.waiting) {
+    if (this.state.waiting) {
+      alert("Se está una jugada. Por favor, espere para continuar con el juego...");
+      return;
+    } else if(this.state.complete) {
+      alert("El juego ya está completo.");
       return;
     }
     // Build Prolog query to apply the color flick.
@@ -81,7 +89,7 @@ class Game extends React.Component {
     //        [r,b,b,v,p,y,p,r,b,g,p,y,b,r],
     //        [v,g,p,b,v,v,g,g,g,b,v,g,g,g]],r, Grid)
     const gridS = JSON.stringify(this.state.grid).replaceAll('"', "");
-    const queryS = "flick(" + gridS + "," + color + ", Grid)";
+    const queryS = "flick(" + gridS + "," + color + ", Grid, ("+this.state.origenColor+","+this.state.origenFila+","+this.state.origenColumna+"))"; 
     this.setState({
       waiting: true
     });
@@ -89,6 +97,8 @@ class Game extends React.Component {
       if (success) {
         this.setState({
           grid: response['Grid'],
+          origenColor: color,
+          jugadas: this.state.jugadas + " " + colorToCss(color),
           turns: this.state.turns + 1,
           waiting: false
         });
@@ -101,15 +111,16 @@ class Game extends React.Component {
     });
   }
 
-  clickOrigen(i, j){
+  clickOrigen(c, i, j){
     if(this.state.selecciono === false) {
       this.setState({ 
-        origenFila: i,
-        origenColumna: j,
+        // En prolog la primera fila o primer columna no empieza de 0, si no de 1
+        origenFila: i+1,
+        origenColumna: j+1, 
+        origenColor: c,
         selecciono: true
       });
     }
-    alert("Celda clickeada: " + i + " " + j);
   }
 
   render() {
@@ -133,19 +144,25 @@ class Game extends React.Component {
             <div className="turnsPanel">
               <div className="turnsLab">Turns</div>
               <div className="turnsNum">{this.state.turns}</div>
-            </div>
+              <br></br>
+              <div className="adyacentesLab">Adyacentes actuales</div>
+              <div className="adyacentesNum">{this.state.adyacentes}</div>
+              <br></br>
+              <div className="adyacentesLab">Historial de jugadas</div>
+              <div class="caja">
+                {this.state.jugadas}
+              </div>
+
           </div>
-
-          <Board grid={this.state.grid} onClick={(i,j) => this.clickOrigen(i,j)}/>
-
+          </div>
+          <Board grid={this.state.grid} onClick={(c, i,j) => this.clickOrigen(c, i,j)}/>
         </div>
       );
-    } else{
+    } else{ // Inicio de juego
       return(
       <div className="game">
-         
          <center>Para comenzar, selecciona una celda de origen. (Desde donde se pintará)
-          <Board grid={this.state.grid} onClick={(i,j) => this.clickOrigen(i,j)}/>
+          <Board grid={this.state.grid} onClick={(c, i,j) => this.clickOrigen(c, i,j)}/>
           </center>
         </div>
       );

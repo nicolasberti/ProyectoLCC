@@ -1,3 +1,11 @@
+.caja {
+ width: 200px;
+ margin: 10px auto;
+ padding: 5px;
+ border: solid 2px;
+ font: normal 13px arial, helvetica, sans-serif;
+}
+
 body {
   font: 14px "Century Gothic", Futura, sans-serif;
   margin: 20px;

@@ -10,12 +10,9 @@
 % FGrid es el resultado de hacer 'flick' de la grilla Grid con el color Color.
 % Retorna false si Color coincide con el color de la celda superior izquierda de la grilla. 
 
-flick(Grid, Color, FGrid):- /*tambien deberia mandar como parametro la celda origen elegida (?)*/
-	Grid = [F|Fs],
-	F = [X|Xs],
+flick(Grid, Color, FGrid, (C, I, J)):- /*tambien deberia mandar como parametro la celda origen elegida (?)*/
 	Color \= X,
-	FGrid = [[Color|Xs]|Fs],
-	pintarAdyacentes(Grid, Color, ('y', 1, 1), FGrid).
+	pintarAdyacentes(Grid, Color, (C, I, J), FGrid).
 
 % obtenerAdyacentes(+CeldaI, +CeldaJ, -ListaDeAdyacentesDeEsaCelda)
 obtenerAdyacentes(CI, CJ, L):-

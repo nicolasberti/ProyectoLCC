@@ -24,6 +24,17 @@ export function colorToCss(color) {
   return color;
 }
 
+export function colorToSpanish(color){
+  switch (color) {
+    case "r": return "Rojo";
+    case "v": return "Violeta";
+    case "p": return "Rosa";
+    case "g": return "Verde";
+    case "b": return "Azul";
+    case "y": return "Amarillo";
+  }
+  return color;
+}
 
 
 class Game extends React.Component {
@@ -98,10 +109,45 @@ class Game extends React.Component {
         this.setState({
           grid: response['Grid'],
           origenColor: color,
-          jugadas: this.state.jugadas + " " + colorToCss(color),
           turns: this.state.turns + 1,
+          jugadas: this.state.jugadas + " -> " + colorToSpanish(color) + "[" + this.state.turns + "]",
           waiting: false
         });
+
+        // Calcula la cantidad de adyacentes que hay después de pintar
+        const gridNueva = JSON.stringify(this.state.grid).replaceAll('"', "");
+        const queryAdyacentes = "cantidadAdyacentes(" + gridNueva + "," +"("+this.state.origenColor+","+this.state.origenFila+","+this.state.origenColumna+"), N)"; 
+        this.setState({
+          waiting: true
+        });
+        this.pengine.query(queryAdyacentes, (success, response) => {
+          if (success) {
+            this.setState({
+              adyacentes: response['N'],
+              waiting: false
+            });
+          }  
+        });
+
+        // Comprueba si ganó el juego
+        const queryGano = "gano("+gridNueva+")"; 
+        this.setState({
+          waiting: true
+        });
+        this.pengine.query(queryGano, (success, response) => {
+          if (success) {
+            this.setState({
+              complete: true,
+              waiting: false
+            });
+            alert("Ganaste el juego!");
+          } else{
+            this.setState({
+              waiting: false
+            });
+          }  
+        });
+
       } else {
         // Prolog query will fail when the clicked color coincides with that in the top left cell.
         this.setState({
@@ -120,6 +166,44 @@ class Game extends React.Component {
         origenColor: c,
         selecciono: true
       });
+
+      // Comprueba, por excepción, si en la grilla inicial según la celda origen que se seleccionó hay adyacentes o está "ganada" (todos las celdas son iguales) 
+
+      // Calcula la cantidad de adyacentes que hay después de pintar
+      const gridNueva = JSON.stringify(this.state.grid).replaceAll('"', "");
+      const queryAdyacentes = "cantidadAdyacentes(" + gridNueva + "," +"("+c+","+ (i+1) +","+ (j+1) +"), N)"; 
+      
+      this.setState({
+        waiting: true
+      });
+      this.pengine.query(queryAdyacentes, (success, response) => {
+        if (success) {
+          this.setState({
+            adyacentes: response['N'],
+            waiting: false
+          });
+        }  
+      });
+
+      // Comprueba si ganó el juego
+      const queryGano = "gano("+gridNueva+")"; 
+      this.setState({
+        waiting: true
+      });
+      this.pengine.query(queryGano, (success, response) => {
+        if (success) {
+          this.setState({
+            complete: true,
+            waiting: false
+          });
+          alert("Ganaste el juego!");
+        } else{
+          this.setState({
+            waiting: false
+          });
+        }  
+      });
+
     }
   }
 
@@ -142,7 +226,7 @@ class Game extends React.Component {
                 />)}
             </div>
             <div className="turnsPanel">
-              <div className="turnsLab">Turns</div>
+              <div className="turnsLab">Jugadas</div>
               <div className="turnsNum">{this.state.turns}</div>
               <br></br>
               <div className="adyacentesLab">Adyacentes actuales</div>

@@ -125,4 +125,4 @@ adyacentes(M, (C,I,J), Ln):-
     assert( esAdy((C,I,J))), % Agrega la celda origen a los adyacentes. (Si no, nunca es marcada)
     findall(X, esAdy(X), Ln), 
     retractall(esAdy(_)), 
-    retractall(visitado(_)).
+    retractall(visitado(_)).	

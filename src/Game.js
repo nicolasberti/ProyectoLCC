@@ -14,12 +14,12 @@ const colors = ["r", "v", "p", "g", "b", "y"];  // red, violet, pink, green, blu
 
 export function colorToCss(color) {
   switch (color) {
-    case "r": return "red";
-    case "v": return "violet";
-    case "p": return "pink";
-    case "g": return "green";
-    case "b": return "blue";
-    case "y": return "yellow";
+    case "r": return "#FF6666";
+    case "v": return "#B266FF";
+    case "p": return "#FFCCE5";
+    case "g": return "#99FF99";
+    case "b": return "#6666FF";
+    case "y": return "#FFFF99";
   }
   return color;
 }
@@ -110,7 +110,7 @@ class Game extends React.Component {
           grid: response['Grid'],
           origenColor: color,
           turns: this.state.turns + 1,
-          jugadas: this.state.jugadas + " -> " + colorToSpanish(color) + "[" + this.state.turns + "]",
+          jugadas: this.state.jugadas + " -> " + colorToSpanish(color) + "[" +( this.state.turns + 1 )+ "]",
           waiting: false
         });
 
@@ -220,7 +220,9 @@ class Game extends React.Component {
               {colors.map(color =>
                 <button
                   className="colorBtn"
-                  style={{ backgroundColor: colorToCss(color) }}
+                  style={{ backgroundColor: colorToCss(color) ,
+                    borderRadius: '5px'
+                  }}
                   onClick={() => this.handleClick(color)}
                   key={color}
                 />)}
@@ -236,7 +238,7 @@ class Game extends React.Component {
               <div class="caja">
                 {this.state.jugadas}
               </div>
-
+                
           </div>
           </div>
           <Board grid={this.state.grid} onClick={(c, i,j) => this.clickOrigen(c, i,j)}/>

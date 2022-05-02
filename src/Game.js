@@ -1,6 +1,7 @@
 import React from 'react';
 import PengineClient from './PengineClient';
 import Board from './Board';
+import Square from './Square';
 
 /**
  * List of colors.
@@ -77,10 +78,10 @@ class Game extends React.Component {
   handleClick(color) {
     // No action on click if game is complete or we are waiting.
     if (this.state.waiting) {
-      alert("Se está una jugada. Por favor, espere para continuar con el juego...");
+     // alert("Se está evaluando una jugada. Por favor, espere para continuar con el juego...");
       return;
     } else if(this.state.complete) {
-      alert("El juego ya está completo.");
+     // alert("El juego ya está completo.");
       return;
     }
     // Build Prolog query to apply the color flick.
@@ -110,7 +111,7 @@ class Game extends React.Component {
           grid: response['Grid'],
           origenColor: color,
           turns: this.state.turns + 1,
-          jugadas: this.state.jugadas + " -> " + colorToSpanish(color) + "[" +( this.state.turns + 1 )+ "]",
+          jugadas: this.state.jugadas + "" + color,
           waiting: false
         });
 
@@ -140,7 +141,7 @@ class Game extends React.Component {
               complete: true,
               waiting: false
             });
-            alert("Ganaste el juego!");
+            //alert("Ganaste el juego!");
           } else{
             this.setState({
               waiting: false
@@ -196,7 +197,7 @@ class Game extends React.Component {
             complete: true,
             waiting: false
           });
-          alert("Ganaste el juego!");
+          //alert("Ganaste el juego!");
         } else{
           this.setState({
             waiting: false
@@ -213,37 +214,89 @@ class Game extends React.Component {
     }
 
     if(this.state.selecciono === true) {
-      return (
-        <div className="game">
-          <div className="leftPanel">
-            <div className="buttonsPanel">
-              {colors.map(color =>
-                <button
-                  className="colorBtn"
-                  style={{ backgroundColor: colorToCss(color) ,
-                    borderRadius: '5px'
-                  }}
-                  onClick={() => this.handleClick(color)}
-                  key={color}
-                />)}
-            </div>
-            <div className="turnsPanel">
-              <div className="turnsLab">Jugadas</div>
-              <div className="turnsNum">{this.state.turns}</div>
-              <br></br>
-              <div className="adyacentesLab">Adyacentes actuales</div>
-              <div className="adyacentesNum">{this.state.adyacentes}</div>
-              <br></br>
-              <div className="adyacentesLab">Historial de jugadas</div>
-              <div class="caja">
-                {this.state.jugadas}
+      if(this.state.complete === false){
+        return (
+          <div className="game">
+            <div className="leftPanel">
+              <div className="buttonsPanel">
+                {colors.map(color =>
+                  <button
+                    className="colorBtn"
+                    style={{ backgroundColor: colorToCss(color) ,
+                      borderRadius: '5px'
+                    }}
+                    onClick={() => this.handleClick(color)}
+                    key={color}
+                  />)}
               </div>
-                
+              <div className="turnsPanel">
+                <div className="turnsLab">Jugadas</div>
+                <div className="turnsNum">{this.state.turns}</div>
+                <br></br>
+                <div className="adyacentesLab">Adyacentes actuales</div>
+                <div className="adyacentesNum">{this.state.adyacentes}</div>
+                <br></br>
+                <div className="adyacentesLab">Historial de jugadas</div>
+                <div class="caja">
+                  {this.state.jugadas.split('').map((colorHistorial) => 
+                  <div 
+                    style={{ backgroundColor: colorToCss(colorHistorial),
+                    width: '7px',
+                    border: '1px solid #606060',
+                    borderRadius: '5px',
+                    padding: '10px',
+                    margin: '13px'}} />
+                  )}
+                </div>
+                  
+            </div>
+            </div>
+            <Board grid={this.state.grid} onClick={(c, i,j) => this.clickOrigen(c, i,j)}/>
           </div>
+        );
+      } else {
+        return (
+          <div className="game">
+            <div className="leftPanel">
+              <div className="buttonsPanel">
+                {colors.map(color =>
+                  <button
+                    className="colorBtn"
+                    style={{ backgroundColor: colorToCss(color) ,
+                      borderRadius: '5px'
+                    }}
+                    onClick={() => this.handleClick(color)}
+                    key={color}
+                  />)}
+              </div>
+              <div className="turnsPanel">
+                <div className="turnsLab">Jugadas</div>
+                <div className="turnsNum">{this.state.turns}</div>
+                <br></br>
+                <div className="adyacentesLab">Adyacentes actuales</div>
+                <div className="adyacentesNum">{this.state.adyacentes}</div>
+                <br></br>
+                <div className="adyacentesLab">Historial de jugadas</div>
+                <div class="caja">
+                  {this.state.jugadas.split('').map((colorHistorial) => 
+                  <div 
+                    style={{ backgroundColor: colorToCss(colorHistorial),
+                    width: '7px',
+                    border: '1px solid #606060',
+                    borderRadius: '5px',
+                    padding: '10px',
+                    margin: '13px'}} />
+                  )}
+                </div>
+                  
+            </div>
+              <div className="turnsLab" style={{color: 'green'}}>Juego completado!</div>
+            </div>
+            <Board grid={this.state.grid} onClick={(c, i,j) => this.clickOrigen(c, i,j)}/>
+            
           </div>
-          <Board grid={this.state.grid} onClick={(c, i,j) => this.clickOrigen(c, i,j)}/>
-        </div>
-      );
+        );
+      }
     } else{ // Inicio de juego
       return(
       <div className="game">

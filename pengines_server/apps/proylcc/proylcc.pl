@@ -24,27 +24,22 @@ flick(Grid, Color, FGrid, (C, I, J)):-
 % En este codigo no se usa a 0 como el primer elemento, si no a 1.
 % Esto por convención en prolog ya que el primer elemento de una lista es el indice 1 y no 0.
 
-/*
- * Funciones principales
- * pintarAdyacentes: para pintar apartir de una cierta celda todos los adyacentes a esa celda.
- * contarAdyacentes: para contar apartir de una cierta celda todos los adyacentes a esa celda.
- * 
- */
 
-% Hay que documentar bien porque decir "devuelve" no es correcto en prolog ya que son predicados
-% mapea un elemento de la matriz a un vector (C,I,J) (color y posiciones)
+% miembro(+M, +(C,I,J)) true sssi la celda (C,I,J) pertenece a la matriz M
 miembro(M, (C,I,J)):-
    nth1(I, M, LFila),
    nth1(J, LFila, C).
 
 % Pinta todos los adyacentes apartir de una celda (C,I,J) de una matriz M por el color Cn
 % Devuelve Mn siendo la matriz pintada.
+% pintarAdyacentes(+M, +Cn, +(C,I,J), -Mn)
 pintarAdyacentes(M, Cn, (C,I,J), Mn):-
     adyacentes(M, (C,I,J), Ln),
     pintar(M, Cn, Ln, Mn).
 
-% Pinta todos los adyacentes contenidos en una lista [(C,I,J) | Ls] en la matriz M del color Cn
+% Pinta todos los adyacentes contenidos en una lista L = [(C,I,J) | Ls] en la matriz M del color Cn
 % Mn es la lista con los colores pintados
+% pintar(+M, +Cn, +L, -Mn) 
 pintar(M, _Cn, [], M).
 pintar(M, Cn, [(C,I,J) | Ls], Mn):-
     nth1(I, M, LFila),
@@ -53,16 +48,17 @@ pintar(M, Cn, [(C,I,J) | Ls], Mn):-
 	replace(LFila, I, LFilaN, M, Maux),
 	pintar(Maux, Cn, Ls, Mn).
 
-%
+% Codigo re-utilizado
 % replace(?X, +XIndex, +Y, +Xs, -XsY)
-%
 replace(X, 1, Y, [X|Xs], [Y|Xs]).
-
 replace(X, XIndex, Y, [Xi|Xs], [Xi|XsY]):-
     XIndex > 1,
     XIndexS is XIndex - 1,
     replace(X, XIndexS, Y, Xs, XsY).
 
+% Apartir de una celda origen, se obtienen todos los adyacentesC
+% Los marca dinamicamente a los adyacentes con el hecho esAdy(Celda)
+% adyacentesTransitivos(+L, +(C,I,J). L es la lista de celdas que tienen el mismo color que la celda origen
 adyacentesTransitivos(L, (C,I,J)):-
     assert( visitado((C,I,J)) );
     ( 
@@ -94,14 +90,13 @@ adyacentesTransitivos(L, (C,I,J)):-
 			adyacentesTransitivos(L, (C,I,JIzq)) % Da siempre true pero no puede marcar ninguno.
 	).
 
-% adyacenteC(X, Y) se verifica si existe un camino desde X a Y
-% como siempre se va a verificar que adyacenteC( celdaOrigen, Y)
-% y adyacenteC(X, celdaOrigen), entonces se puede afirmar que adyacenteC(X,Y)
-
+% Cantidad de adyacentes que contiene la matriz M apartir de una celda origen (C,I,J)
+% cantidadAdyacentes(+M, +(C,I,J), -N)
 cantidadAdyacentes(M, (C,I,J), N):-
     adyacentes(M, (C,I,J), Ln),
     length(Ln, N).
 
+% Verifica si la matriz tiene todos los colores iguales (sirve para el metodo gano)
 iguales([X|Xs]):-
     igualesAux([X|Xs], X).
 
@@ -110,11 +105,14 @@ igualesAux([X | Xs], Elem):-
        Elem = X,
     igualesAux(Xs, Elem).
 
+% true sssi el juego fue completado.
 gano(M):-
     M = [X|Xs],
     iguales(X),
     igualesAux([X|Xs], X). 
 
+% Encuentra todos los adyacentes de la matriz M apartir de una celda origen (C,I,J) y devuelve los adyacentes en Ln
+% adyacentes(+M, +(C,I,J), -Ln)
 adyacentes(M, (C,I,J), Ln):-
 	findall( (C,Ix,Jx), miembro(M, (C,Ix,Jx)), Nodos),
 	findall(_, adyacentesTransitivos(Nodos, (C,I,J)), _), 

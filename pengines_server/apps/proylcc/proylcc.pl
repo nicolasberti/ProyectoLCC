@@ -24,7 +24,6 @@ flick(Grid, Color, FGrid, (C, I, J)):-
 % En este codigo no se usa a 0 como el primer elemento, si no a 1.
 % Esto por convención en prolog ya que el primer elemento de una lista es el indice 1 y no 0.
 
-
 % miembro(+M, +(C,I,J)) true sssi la celda (C,I,J) pertenece a la matriz M
 miembro(M, (C,I,J)):-
    nth1(I, M, LFila),

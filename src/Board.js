@@ -11,7 +11,8 @@ class Board extends React.Component {
                         <Square 
                         onClick={() => this.props.onClick(cell,i,j)}
                         value={cell}
-                        key={i + "." + j} />
+                        key={i + "." + j} 
+                        origen={this.props.origenFila===(i+1) && this.props.origenColumna===(j+1)}/> // se evalua si es la celda origen para diferenciarla de las demás
                     )
                 )}
             </div>

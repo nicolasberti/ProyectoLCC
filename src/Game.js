@@ -46,12 +46,12 @@ class Game extends React.Component {
     super(props);
     this.state = {
       turns: 0,
-      adyacentes: 0,
-      origenColor: null,
-      origenFila: 0,
-      origenColumna: 0,
+      adyacentes: 0, // Almacena la cantidad de adyacentes a la celda origen.
+      origenColor: null, // Color de la celda origen
+      origenFila: 0, // Posicion i de la celda origen
+      origenColumna: 0, // Posicion j de la celda origen
       grid: null,
-      jugadas: "",
+      jugadas: "", // String para el historial de jugadas
       complete: false,  // true if game is complete, false otherwise
       waiting: false,
       selecciono: false // true si selecciono la celda de origen
@@ -173,7 +173,6 @@ class Game extends React.Component {
       // Calcula la cantidad de adyacentes que hay después de pintar
       const gridNueva = JSON.stringify(this.state.grid).replaceAll('"', "");
       const queryAdyacentes = "cantidadAdyacentes(" + gridNueva + "," +"("+c+","+ (i+1) +","+ (j+1) +"), N)"; 
-      
       this.setState({
         waiting: true
       });
@@ -214,7 +213,7 @@ class Game extends React.Component {
     }
 
     if(this.state.selecciono === true) {
-      if(this.state.complete === false){
+      if(this.state.complete === false){ // Si el juego no está completo, renderiza lo siguiente
         return (
           <div className="game">
             <div className="leftPanel">
@@ -251,11 +250,11 @@ class Game extends React.Component {
                   
             </div>
             </div>
-            <Board grid={this.state.grid} onClick={(c, i,j) => this.clickOrigen(c, i,j)}/>
+            <Board grid={this.state.grid} origenFila={this.state.origenFila} origenColumna={this.state.origenColumna} onClick={(c,i,j) => this.clickOrigen(c, i,j)}/>
           </div>
         );
       } else {
-        return (
+        return ( // Si el juego está completo, renderiza un cartel de "juego completo"
           <div className="game">
             <div className="leftPanel">
               <div className="buttonsPanel">
@@ -270,6 +269,7 @@ class Game extends React.Component {
                   />)}
               </div>
               <div className="turnsPanel">
+              <div className="turnsLab" style={{color: 'green'}}>Juego completado!</div><br></br>
                 <div className="turnsLab">Jugadas</div>
                 <div className="turnsNum">{this.state.turns}</div>
                 <br></br>
@@ -290,9 +290,8 @@ class Game extends React.Component {
                 </div>
                   
             </div>
-              <div className="turnsLab" style={{color: 'green'}}>Juego completado!</div>
             </div>
-            <Board grid={this.state.grid} onClick={(c, i,j) => this.clickOrigen(c, i,j)}/>
+            <Board grid={this.state.grid} origenFila={this.state.origenFila} origenColumna={this.state.origenColumna} onClick={(c, i,j) => this.clickOrigen(c, i,j)}/>
             
           </div>
         );
@@ -301,13 +300,14 @@ class Game extends React.Component {
       return(
       <div className="game">
          <center>Para comenzar, selecciona una celda de origen. (Desde donde se pintará)
-          <Board grid={this.state.grid} onClick={(c, i,j) => this.clickOrigen(c, i,j)}/>
+          <Board grid={this.state.grid} origenFila={1} origenColumna={1} onClick={(c, i,j) => this.clickOrigen(c, i,j)}/>
+          <i>Por defecto, la celda origen es la de arriba a la izquierda.</i>
           </center>
         </div>
       );
     }
   }
-
+  // OBS: En el board se pasa la celda origen para visualizar en el tablero diferente a dicha celda.
 }
 
 

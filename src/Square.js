@@ -5,15 +5,26 @@ import { colorToCss } from './Game';
 class Square extends React.Component {
 
     render() {
-        return (
-            <div 
-            onClick={this.props.onClick}
-            style={{ backgroundColor: colorToCss(this.props.value),
-                border: '1px solid #606060',
-                borderRadius: '5px'
+        if(this.props.origen === false){
+            return ( // estilo para las celdas que no son origen
+                <div 
+                onClick={this.props.onClick}
+                style={{ backgroundColor: colorToCss(this.props.value),
+                    border: '1px solid #606060',
+                    borderRadius: '5px'
 
-            }} />
-        );
+                }} />
+            );
+        } else {
+            return ( // estilo para la celda origen
+                <div  
+                onClick={this.props.onClick}
+                style={{ backgroundColor: colorToCss(this.props.value),
+                    border: '3px solid #000000', 
+                    borderRadius: '5px'
+                }}></div>
+            );
+        }
     }
 }
 

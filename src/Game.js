@@ -1,7 +1,6 @@
 import React from 'react';
 import PengineClient from './PengineClient';
 import Board from './Board';
-import Square from './Square';
 
 /**
  * List of colors.
@@ -25,18 +24,6 @@ export function colorToCss(color) {
   return color;
 }
 
-export function colorToSpanish(color){
-  switch (color) {
-    case "r": return "Rojo";
-    case "v": return "Violeta";
-    case "p": return "Rosa";
-    case "g": return "Verde";
-    case "b": return "Azul";
-    case "y": return "Amarillo";
-  }
-  return color;
-}
-
 
 class Game extends React.Component {
 
@@ -48,8 +35,8 @@ class Game extends React.Component {
       turns: 0,
       adyacentes: 0, // Almacena la cantidad de adyacentes a la celda origen.
       origenColor: null, // Color de la celda origen
-      origenFila: 0, // Posicion i de la celda origen
-      origenColumna: 0, // Posicion j de la celda origen
+      origenFila: 1, // Posicion i de la celda origen
+      origenColumna: 1, // Posicion j de la celda origen
       grid: null,
       jugadas: "", // String para el historial de jugadas
       complete: false,  // true if game is complete, false otherwise
@@ -72,9 +59,7 @@ class Game extends React.Component {
       } 
     });
   }
-
   
-
   handleClick(color) {
     // No action on click if game is complete or we are waiting.
     if (this.state.waiting) {
@@ -213,7 +198,7 @@ class Game extends React.Component {
     }
 
     if(this.state.selecciono === true) {
-      if(this.state.complete === false){ // Si el juego no está completo, renderiza lo siguiente
+      if(this.state.complete === false){ // Jugando
         return (
           <div className="game">
             <div className="leftPanel">
@@ -228,14 +213,23 @@ class Game extends React.Component {
                     key={color}
                   />)}
               </div>
+              <div><br></br><center><button 
+                style={{ backgroundColor: '#4CAF50',
+                  fontSize: '16px',
+                  color: 'White',
+                  borderColor: 'Black',
+                  borderRadius: '5px',
+                  textAlign: 'center',
+                  textDecoration: 'none',
+                  padding: '15px 32px'
+                }}
+                onClick={() => window.location.reload()}>Reiniciar juego</button></center></div>
               <div className="turnsPanel">
-                <div className="turnsLab">Jugadas</div>
+              <div className="adyacentesLab">Jugadas</div>
                 <div className="turnsNum">{this.state.turns}</div>
-                <br></br>
                 <div className="adyacentesLab">Adyacentes actuales</div>
-                <div className="adyacentesNum">{this.state.adyacentes}</div>
-                <br></br>
-                <div className="adyacentesLab">Historial de jugadas</div>
+                <div className="turnsNum">{this.state.adyacentes}</div>
+                <div className="adyacentesLab"><br></br>Historial de jugadas</div>
                 <div class="caja">
                   {this.state.jugadas.split('').map((colorHistorial) => 
                   <div 
@@ -249,9 +243,12 @@ class Game extends React.Component {
                 </div>
                   
             </div>
+            
             </div>
             <Board grid={this.state.grid} origenFila={this.state.origenFila} origenColumna={this.state.origenColumna} onClick={(c,i,j) => this.clickOrigen(c, i,j)}/>
+            
           </div>
+           
         );
       } else {
         return ( // Si el juego está completo, renderiza un cartel de "juego completo"
@@ -268,15 +265,25 @@ class Game extends React.Component {
                     key={color}
                   />)}
               </div>
+              <div><br></br><center><button 
+                style={{ backgroundColor: '#4CAF50',
+                  fontSize: '16px',
+                  color: 'White',
+                  borderColor: 'Black',
+                  borderRadius: '5px',
+                  textAlign: 'center',
+                  textDecoration: 'none',
+                  padding: '15px 32px'
+              }}
+                onClick={() => window.location.reload()}>Reiniciar juego</button></center></div>
+
               <div className="turnsPanel">
-              <div className="turnsLab" style={{color: 'green'}}>Juego completado!</div><br></br>
-                <div className="turnsLab">Jugadas</div>
+              <div className="adyacentesLab" style={{color: 'green'}}>Juego completado!</div>
+                <div className="adyacentesLab"><br></br>Jugadas</div>
                 <div className="turnsNum">{this.state.turns}</div>
-                <br></br>
                 <div className="adyacentesLab">Adyacentes actuales</div>
-                <div className="adyacentesNum">{this.state.adyacentes}</div>
-                <br></br>
-                <div className="adyacentesLab">Historial de jugadas</div>
+                <div className="turnsNum">{this.state.adyacentes}</div>
+                <div className="adyacentesLab"><br></br>Historial de jugadas</div>
                 <div class="caja">
                   {this.state.jugadas.split('').map((colorHistorial) => 
                   <div 
@@ -294,14 +301,22 @@ class Game extends React.Component {
             <Board grid={this.state.grid} origenFila={this.state.origenFila} origenColumna={this.state.origenColumna} onClick={(c, i,j) => this.clickOrigen(c, i,j)}/>
             
           </div>
+          
         );
       }
     } else{ // Inicio de juego
+      
+      /*
+
+        Aca va el código del timeout
+
+      */
+
       return(
       <div className="game">
-         <center>Para comenzar, selecciona una celda de origen. (Desde donde se pintará)
+         <center>Para comenzar, selecciona la celda origen
           <Board grid={this.state.grid} origenFila={1} origenColumna={1} onClick={(c, i,j) => this.clickOrigen(c, i,j)}/>
-          <i>Por defecto, la celda origen es la de arriba a la izquierda.</i>
+          <i>Por defecto, la celda origen es la superior izquierda. (Si en 10 segundos no se selecciona otra celda, esta será la celda origen)</i>
           </center>
         </div>
       );

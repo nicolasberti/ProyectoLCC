@@ -306,6 +306,15 @@ class Game extends React.Component {
       }
     } else{ // Inicio de juego
       
+      setTimeout(() => { 
+        if(this.state.selecciono === false) {
+          this.setState({
+            selecciono: true,
+            origenColor: JSON.stringify(this.state.grid).charAt(3),
+          });
+        }
+      }, 10000);
+
       /*
 
         Aca va el código del timeout

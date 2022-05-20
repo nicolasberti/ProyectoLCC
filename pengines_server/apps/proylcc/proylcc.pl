@@ -123,3 +123,16 @@ adyacentes(M, (C,I,J), Ln):-
     findall(X, esAdy(X), Ln), 
     retractall(esAdy(_)), 
     retractall(visitado(_)).	
+
+% Habria que ver si hay mas casos bases en los cuales se termine la ejecucion del sugerir.
+sugerirNVeces(_M, (_C, _I, _J), 0, _Ln).
+
+% A partir de la matriz M, la celda origen, y una cantidad N de sugerencias. Ln es una lista con N sugerencias de colores
+% sugerirNVeces(+M, +(C,I,J), +N, -Ln)
+sugerirNVeces(M, (C,I,J), N, [X|Ln]):-
+	sugerir(M, (C, I, J), X), % me devuelve un color X a pintar que seria el de mayor long de colores
+	flick(M, X, Mn, (C, I, J)), % si el color X es el mismo al color C, entonces no sugiere mas colores, por lo tanto termina de realizar las iteraciones (creo)
+	Ni is N - 1,
+	sugerirNVeces(Mn, (X,I,J), Ni, Ln).
+
+sugerir(M, (C,I,J), X).

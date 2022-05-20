@@ -229,6 +229,28 @@ class Game extends React.Component {
                 <div className="turnsNum">{this.state.turns}</div>
                 <div className="adyacentesLab">Adyacentes actuales</div>
                 <div className="turnsNum">{this.state.adyacentes}</div>
+                <div className='helpPanel'>
+                <div className="ayuda">
+                  <input type="number" style={{
+                  borderColor: 'Black',
+                  borderRadius: '5px',
+                  textAlign: 'center'
+                  }}></input>
+                </div>
+                <div>
+                <center><button id='Ayuda' style={{ backgroundColor: '#FFFF99' ,
+                      borderRadius: '5px',
+                      textAlign: 'center'
+                    }}>Sugerencia</button> </center>
+                </div>
+                <br></br>
+                <div className='historialHelp'>
+                </div>
+                
+
+
+                
+                </div>
                 <div className="adyacentesLab"><br></br>Historial de jugadas</div>
                 <div class="caja">
                   {this.state.jugadas.split('').map((colorHistorial) => 

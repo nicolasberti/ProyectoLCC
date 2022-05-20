@@ -25,6 +25,8 @@ body {
   flex-direction: row;
 }
 
+
+
 .leftPanel {
   display: flex;
   flex-direction: column;

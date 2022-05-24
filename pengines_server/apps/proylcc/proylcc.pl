@@ -9,6 +9,7 @@
 
 :- dynamic visitado/1. % true sssi un nodo fue visitado.
 :- dynamic esAdy/1. % true sssi un nodo es adyacente transitivo de una celda origen.
+:- dynamic adyacentesAPintar/1.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -135,4 +136,73 @@ sugerirNVeces(M, (C,I,J), N, [X|Ln]):-
 	Ni is N - 1,
 	sugerirNVeces(Mn, (X,I,J), Ni, Ln).
 
-sugerir(M, (C,I,J), X).
+sugerir(M, (C,I,J), X):-
+    adyacentes(M, (C,I,J), L),
+    listaBorde(M, L, [], LBorde),
+    marcarAdyacente(LBorde),
+    buscarAdyacentes(M, LBorde),
+    findall( (I1,J1), adyacentesAPintar((r,I1,J1)), LRojo),
+    findall( (I2,J2), adyacentesAPintar((g,I2,J2)), LVerde),
+    findall( (I3,J3), adyacentesAPintar((b,I3,J3)), LAzul),
+    findall( (I4,J4), adyacentesAPintar((y,I4,J4)), LAmarillo),
+    findall( (I5,J5), adyacentesAPintar((v,I5,J5)), LVioleta),
+    findall( (I6,J6), adyacentesAPintar((p,I6,J6)), LRosa),
+    retractall(adyacentesAPintar(_)), 
+    length(LRojo,NRojo),
+    length(LVerde,NVerde),
+    length(LAzul,NAzul),
+    length(LAmarillo,NAmarillo),
+    length(LVioleta,NVioleta),
+    length(LRosa,NRosa),
+    not( (length(LRojo, 0), length(LVerde, 0), length(LAzul, 0), length(LAmarillo, 0), length(LVioleta, 0), length(LRosa, 0))),
+    LN = [ (r,NRojo), (g,NVerde), (b,NAzul), (y, NAmarillo), (v, NVioleta), (p, NRosa) ],
+    colorMayor((X,_), LN), !.
+    
+
+buscarAdyacentes(_, []):- !.
+buscarAdyacentes(M, [(C,I,J) | Ls]):-
+    adyacentes(M, (C,I,J), L),
+    marcarAdyacente(L),
+    buscarAdyacentes(M, Ls).
+    
+    
+ady( (I1,J1), (I2,J2) ):-
+    ( I1 #= I2+1, J1#=J2 );
+    ( I1 #= I2-1, J1#=J2 );
+    ( J1 #= J2+1, I1#=I2 );
+    ( J1 #= J2-1, I1#=I2 ).
+    
+adyDistintoColor(M, (C1,I1,J1), Ln):-
+   	findall((C2,I2,J2), 
+            (
+              ady( (I1,J1), (I2,J2)),
+              miembro(M, (C2,I2,J2)),
+              C2\=C1 % No considera los adyacentes del mismo color.
+            ), Ln).
+
+listaBorde(_, [], Actuales, Actuales).
+listaBorde(M, [(C1,I1,J1) | Ls], Actuales, Nuevos):-
+    adyDistintoColor(M, (C1,I1,J1), Ln),
+    append(Actuales, Ln, ActualesLn),
+    listaBorde(M, Ls, ActualesLn, Nuevos), !.
+
+
+marcarAdyacente([]):- !.
+marcarAdyacente([(C,I,J) | Ls]):-
+    not( adyacentesAPintar((C,I,J)) ),
+    assert(adyacentesAPintar((C,I,J))),
+    marcarAdyacente(Ls).
+marcarAdyacente([(,,_) | Ls]):- % En caso de que esté repetido, no lo marca.
+    marcarAdyacente(Ls).
+
+
+colorMayor((C, M), [(C1, X)|Xs]):-
+          colorMayor((C,M), (C1,X), Xs).
+colorMayor((C,M), (C,M), []):- !.
+colorMayor((C,X), (_,Y), [(C2,Z)|Zs]):-
+          Z >= Y,
+          !,
+          colorMayor((C,X), (C2,Z), Zs).
+colorMayor((C,X), (C1,Y), [(_,Z)|Zs]):-
+          Z =< Y,
+          colorMayor((C,X), (C1,Y), Zs).

@@ -143,6 +143,18 @@ class Game extends React.Component {
     });
   }
 
+  clickSugerencia(numero){
+    console.log(numero);
+     
+    //sugerirNVeces(+M, +(C,I,J), +N, -Ln)
+    const querySugerir = "sugerirNVeces("+ this.state.grid + ",("+ this.state.origenColor + "," +this.state.origenFila+1 + "," + this.state.origenColumna+1 +"),"+numero+", Ln)";
+    this.pengine.query(querySugerir, (success, response) => {
+      if(success){
+      }
+    })
+
+  }
+
   clickOrigen(c, i, j){
     if(this.state.selecciono === false) {
       this.setState({ 
@@ -231,17 +243,19 @@ class Game extends React.Component {
                 <div className="turnsNum">{this.state.adyacentes}</div>
                 <div className='helpPanel'>
                 <div className="ayuda">
-                  <input type="number" style={{
+                  <input id='cajaNum' type="number" min={1} style={{
                   borderColor: 'Black',
                   borderRadius: '5px',
                   textAlign: 'center'
                   }}></input>
                 </div>
                 <div>
-                <center><button id='Ayuda' style={{ backgroundColor: '#FFFF99' ,
+                <center>
+                  
+                  <button id='Ayuda' style={{ backgroundColor: '#FFFF99' ,
                       borderRadius: '5px',
-                      textAlign: 'center'
-                    }}>Sugerencia</button> </center>
+                      textAlign: 'center',
+                    }}onClick={() =>  this.clickSugerencia(document.getElementById('cajaNum').value)}>Sugerencia</button> </center>
                 </div>
                 <br></br>
                 <div className='historialHelp'>
@@ -337,11 +351,6 @@ class Game extends React.Component {
         }
       }, 10000);
 
-      /*
-
-        Aca va el código del timeout
-
-      */
 
       return(
       <div className="game">

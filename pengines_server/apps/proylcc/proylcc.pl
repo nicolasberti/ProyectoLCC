@@ -3,6 +3,7 @@
 		flick/4,
 		cantidadAdyacentes/3,
 		gano/1
+        sugerirNVeces/5
 	]).
 
 :- use_module(library(clpfd)).
@@ -126,28 +127,26 @@ adyacentes(M, (C,I,J), Ln):-
     retractall(visitado(_)).	
 
 
+sugerirNVeces(M, (C,I,J), N, Ln, NAdy):-
+    cantidadAdyacentes(M, (C,I,J), NAdy1),
+    sugerirNVecesAux(M, (C,I,J), N, Ln),
+    cantidadAdyacentes(M, (C,I,J), NAdy2),
+    NAdy is (NAdy2 - NAdy1). 
 
 % Habria que ver si hay mas casos bases en los cuales se termine la ejecucion del sugerir.
-sugerirNVeces(_, _, 0, []).
+sugerirNVecesAux(_, _, 0, []).
 
 % A partir de la matriz M, la celda origen, y una cantidad N de sugerencias. Ln es una lista con N sugerencias de colores
-% sugerirNVeces(+M, +(C,I,J), +N, -Ln)
-sugerirNVeces(M, (C,I,J), N, [X | Ln]):-
+% sugerirNVecesAux(+M, +(C,I,J), +N, -Ln)
+sugerirNVecesAux(M, (C,I,J), N, [X | Ln]):-
 	sugerir(M, (C, I, J), X), % me devuelve un color X a pintar que seria el de mayor long de colores
 	flick(M, X, Mn, (C, I, J)), % si el color X es el mismo al color C, entonces no sugiere mas colores, por lo tanto termina de realizar las iteraciones (creo)
 	Ni is N - 1,
-	sugerirNVeces(Mn, (X,I,J), Ni, Ln), !. % Agrego ! a lo ultimo para q considere la unica rama
+	sugerirNVecesAux(Mn, (X,I,J), Ni, Ln), !. % Agrego ! a lo ultimo para q considere la unica rama
 
 % Predicado de corte si N es mayor q la cantidad de secuencia de colores
-sugerirNVeces(M, _, _, []):-
+sugerirNVecesAux(M, _, _, []):-
 	gano(M).
-
-/*
- * capaz podriamos hacer que sugerirNVeces sea sugerirNVecesAux con un parametor mas q sea NAdy q sea
- * cantidadAdyacentes de la ultima Mn pintada
- * y despues el verdadero sugerirNVeces calcule la cantidad de celdas capturas con esta secuencia como
- * NAdy - cantidadAdyacentes de la M original
- */
 
 sugerir(M, (C,I,J), X):-
     adyacentes(M, (C,I,J), L),

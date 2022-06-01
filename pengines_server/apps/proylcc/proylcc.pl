@@ -2,8 +2,9 @@
 	[  
 		flick/4,
 		cantidadAdyacentes/3,
-		gano/1
-        sugerirNVeces/5
+		gano/1,
+        	sugerirNVeces/5,
+		buscarSecuencia/5
 	]).
 
 :- use_module(library(clpfd)).
@@ -11,6 +12,7 @@
 :- dynamic visitado/1. % true sssi un nodo fue visitado.
 :- dynamic esAdy/1. % true sssi un nodo es adyacente transitivo de una celda origen.
 :- dynamic adyacentesAPintar/1.
+:- dynamic ganoJuego/0.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -126,27 +128,27 @@ adyacentes(M, (C,I,J), Ln):-
     retractall(esAdy(_)), 
     retractall(visitado(_)).	
 
-
+% Estrategia local.
 sugerirNVeces(M, (C,I,J), N, Ln, NAdy):-
     cantidadAdyacentes(M, (C,I,J), NAdy1),
-    sugerirNVecesAux(M, (C,I,J), N, Ln),
-    cantidadAdyacentes(M, (C,I,J), NAdy2),
+    sugerirNVecesAux(M, (C,I,J), N, Ln, NAdy2),
     NAdy is (NAdy2 - NAdy1). 
 
 % Habria que ver si hay mas casos bases en los cuales se termine la ejecucion del sugerir.
-sugerirNVecesAux(_, _, 0, []).
+sugerirNVecesAux(M, (C,I,J), 0, [], NAdy2):-
+    cantidadAdyacentes(M, (C,I,J), NAdy2).
 
 % A partir de la matriz M, la celda origen, y una cantidad N de sugerencias. Ln es una lista con N sugerencias de colores
 % sugerirNVecesAux(+M, +(C,I,J), +N, -Ln)
-sugerirNVecesAux(M, (C,I,J), N, [X | Ln]):-
+sugerirNVecesAux(M, (C,I,J), N, [X | Ln], NAdy2):-
 	sugerir(M, (C, I, J), X), % me devuelve un color X a pintar que seria el de mayor long de colores
 	flick(M, X, Mn, (C, I, J)), % si el color X es el mismo al color C, entonces no sugiere mas colores, por lo tanto termina de realizar las iteraciones (creo)
 	Ni is N - 1,
-	sugerirNVecesAux(Mn, (X,I,J), Ni, Ln), !. % Agrego ! a lo ultimo para q considere la unica rama
+	sugerirNVecesAux(Mn, (X,I,J), Ni, Ln, NAdy2), !. % Agrego ! a lo ultimo para q considere la unica rama
 
 % Predicado de corte si N es mayor q la cantidad de secuencia de colores
-sugerirNVecesAux(M, _, _, []):-
-	gano(M).
+sugerirNVecesAux(M, (C,I,J), _, [], NAdy2):-
+	gano(M), cantidadAdyacentes(M, (C,I,J), NAdy2).
 
 sugerir(M, (C,I,J), X):-
     adyacentes(M, (C,I,J), L),
@@ -218,3 +220,75 @@ colorMayor((C,X), (_,Y), [(C2,Z)|Zs]):-
 colorMayor((C,X), (C1,Y), [(_,Z)|Zs]):-
           Z =< Y,
           colorMayor((C,X), (C1,Y), Zs).
+
+
+
+% Estrategia pedida.
+
+buscarSecuencia(M, (C,I,J), N, L, NAdy):-
+    buscarSugerencias(M, (C,I,J), N, Ln),
+    cantidadAdyacentes(M, (C,I,J), NAdyAux),
+    mejorSecuencia(Ln, LAux),
+	last(LAux, X),
+    NAdy #= X - NAdyAux,
+	delete(LAux, X, L),
+    retractall(ganoJuego).
+
+% Busca cual es la mejor secuencia
+% hay 2 alternativas
+% 1. Ganó el juego, se debe encontrar a la lista con menor length en Ln
+% 2. No ganó el juego, se debe encontrar a la lista que tenga el mayor N (cantidad de adyacentes)
+mejorSecuencia(Ln, L):-
+    ganoJuego, !,
+    menorLista(Ln, L).
+mejorSecuencia(Ln, L):-
+    not(ganoJuego), !, 
+    mayorLista(Ln, L).
+
+menorLista([L1 | Xs], L):-
+    menorListaAux(L, L1, Xs).
+menorListaAux(L, L, []):- !.
+menorListaAux(L, L1, [L2 | Zs]):-
+    length(L1, X),
+    length(L2, Y),
+    X =< Y,
+    !,
+    menorListaAux(L, L1, Zs).
+menorListaAux(L, L1, [L2 | Zs]):-
+    length(L1, X),
+    length(L2, Y),
+    X > Y,
+    !,
+    menorListaAux(L, L2, Zs).
+
+mayorLista([L1 | Xs], L):-
+    mayorListaAux(L, L1, Xs).
+mayorListaAux(L, L, []):- !.
+mayorListaAux(L, L1, [L2 | Zs]):-
+    last(L1, X),
+    last(L2, Y),
+    X >= Y,
+    !,
+    mayorListaAux(L, L1, Zs).
+mayorListaAux(L, L1, [L2 | Zs]):-
+    last(L1, X),
+    last(L2, Y),
+    X < Y,
+    !,
+    mayorListaAux(L, L2, Zs).
+
+% Código base para encontrar secuencias de longitud N (o menor si gana el juego)
+buscarSugerencias(M, (C,I,J), N, Ln):-
+	findall(X, sugerenciaN(M, (C,I,J), N, X), Ln).
+
+sugerenciaN(M, (C,I,J), 0, [Y]):-
+    cantidadAdyacentes(M, (C,I,J), Y).
+sugerenciaN(M, (C,I,J), N, [Y]):-
+    N>0, gano(M), assert(ganoJuego), 
+    cantidadAdyacentes(M, (C,I,J), Y), !.
+sugerenciaN(M, (C,I,J), N, [X | Ln]):-
+    N>0, not(gano(M)), not(ganoJuego), !, % Agregar not(ganoJuego) mejora la eficiencia cortando cuando encontró una secuencia que gana el juego.
+    ( X=r; X=g; X=y; X=b; X=p; X=v ),
+    N1 #= N-1,
+    flick(M, X, Mn, (C,I,J)),
+    sugerenciaN(Mn, (X,I,J), N1, Ln).

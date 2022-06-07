@@ -41,7 +41,8 @@ class Game extends React.Component {
       jugadas: "", // String para el historial de jugadas
       complete: false,  // true if game is complete, false otherwise
       waiting: false,
-      selecciono: false // true si selecciono la celda de origen
+      selecciono: false, // true si selecciono la celda de origen
+      sugerencia: "" // String para el historial de sugerencias
     };
     this.handleClick = this.handleClick.bind(this);
     this.handlePengineCreate = this.handlePengineCreate.bind(this);
@@ -143,13 +144,51 @@ class Game extends React.Component {
     });
   }
 
-  clickSugerencia(numero){
+  clickSugerenciaEnProfundidad(numero){
+    
+    const gridS = JSON.stringify(this.state.grid).replaceAll('"', "");
     console.log(numero);
-     
-    //sugerirNVeces(+M, +(C,I,J), +N, -Ln)
-    const querySugerir = "sugerirNVeces("+ this.state.grid + ",("+ this.state.origenColor + "," +this.state.origenFila+1 + "," + this.state.origenColumna+1 +"),"+numero+", Ln)";
+    
+    console.log(gridS);
+
+    const filacons = this.state.origenFila;
+    const columnacons = this.state.origenColumna;
+    //sugerirNVeces(M, (C,I,J), N, Ln, NAdy):- LA MATRIZ DEBERIA LLAMARLA COMO UNA LISTA DE LISTAS
+    const querySugerir = "sugerirNVeces("+ gridS + ",("+ this.state.origenColor + "," +filacons+ "," +columnacons+"),"+numero+", Ln, NAdy)";
+    //console.log(querySugerir); esta bien
+    console.log(this.state.jugadas);
+
     this.pengine.query(querySugerir, (success, response) => {
       if(success){
+        const listaN = response['Ln'];
+        const cantidadAdyTomados = response ['NAdy'];
+        this.state.sugerencia = JSON.stringify(listaN).replaceAll(',',"").replaceAll('[',"").replaceAll(']',"").replaceAll('"',"");
+        console.log(this.state.sugerencia, cantidadAdyTomados);
+      }
+    })
+
+  }
+
+  clickSugerenciaExponencial(numero){
+    
+    const gridS = JSON.stringify(this.state.grid).replaceAll('"', "");
+    console.log(numero);
+    
+    console.log(gridS);
+
+    const filacons = this.state.origenFila;
+    const columnacons = this.state.origenColumna;
+    //buscarSecuencia(+M, +(C,I,J), +N, -L, -NAdy) LA MATRIZ DEBERIA LLAMARLA COMO UNA LISTA DE LISTAS
+    const querySugerir = "buscarSecuencia("+ gridS + ",("+ this.state.origenColor + "," +filacons+ "," +columnacons+"),"+numero+", Ln, NAdy)";
+    //console.log(querySugerir); esta bien
+    console.log(this.state.jugadas);
+
+    this.pengine.query(querySugerir, (success, response) => {
+      if(success){
+        const listaN = response['Ln'];
+        const cantidadAdyTomados = response ['NAdy'];
+        this.state.sugerencia = JSON.stringify(listaN).replaceAll(',',"").replaceAll('[',"").replaceAll(']',"").replaceAll('"',"");
+        console.log(this.state.sugerencia, cantidadAdyTomados);
       }
     })
 
@@ -169,7 +208,9 @@ class Game extends React.Component {
 
       // Calcula la cantidad de adyacentes que hay después de pintar
       const gridNueva = JSON.stringify(this.state.grid).replaceAll('"', "");
+      console.log(gridNueva);
       const queryAdyacentes = "cantidadAdyacentes(" + gridNueva + "," +"("+c+","+ (i+1) +","+ (j+1) +"), N)"; 
+      console.log(queryAdyacentes);
       this.setState({
         waiting: true
       });
@@ -255,13 +296,25 @@ class Game extends React.Component {
                   <button id='Ayuda' style={{ backgroundColor: '#FFFF99' ,
                       borderRadius: '5px',
                       textAlign: 'center',
-                    }}onClick={() =>  this.clickSugerencia(document.getElementById('cajaNum').value)}>Sugerencia</button> </center>
+                    }}onClick={() =>  this.clickSugerenciaExponencial(document.getElementById('cajaNum').value)}>Sugerencia General</button> </center>
+                  <button id='profundidad'style={{ backgroundColor: '#FFFF99' ,
+                      borderRadius: '5px',
+                      textAlign: 'center',
+                    }}onClick={() =>  this.clickSugerenciaEnProfundidad(document.getElementById('cajaNum').value)}>Sugerencia Profundidad</button>
                 </div>
                 <br></br>
-                <div className='historialHelp'>
-                </div>
-                
 
+                <div class="historialHelp">
+                  {this.state.sugerencia.split('').map((colorSugerencia) => 
+                  <div 
+                    style={{ backgroundColor: colorToCss(colorSugerencia),
+                    width: '7px',
+                    border: '1px solid #606060',
+                    borderRadius: '5px',
+                    padding: '10px',
+                    margin: '13px'}} />
+                  )}
+                </div>
 
                 
                 </div>

@@ -42,7 +42,8 @@ class Game extends React.Component {
       complete: false,  // true if game is complete, false otherwise
       waiting: false,
       selecciono: false, // true si selecciono la celda de origen
-      sugerencia: "" // String para el historial de sugerencias
+      sugerencia: "", // String para el historial de sugerencias
+      adyacentesSugerencia: 0 //Cantidad de adyacentes que toma a partir de una sugerencia
     };
     this.handleClick = this.handleClick.bind(this);
     this.handlePengineCreate = this.handlePengineCreate.bind(this);
@@ -160,10 +161,10 @@ class Game extends React.Component {
 
     this.pengine.query(querySugerir, (success, response) => {
       if(success){
-        const listaN = response['Ln'];
-        const cantidadAdyTomados = response ['NAdy'];
-        this.state.sugerencia = JSON.stringify(listaN).replaceAll(',',"").replaceAll('[',"").replaceAll(']',"").replaceAll('"',"");
-        console.log(this.state.sugerencia, cantidadAdyTomados);
+        this.setState({
+          sugerencia: JSON.stringify(response['Ln']).replaceAll(',',"").replaceAll('[',"").replaceAll(']',"").replaceAll('"',""),
+          adyacentesSugerencia: response ['NAdy']
+        })
       }
     })
 
@@ -185,10 +186,10 @@ class Game extends React.Component {
 
     this.pengine.query(querySugerir, (success, response) => {
       if(success){
-        const listaN = response['Ln'];
-        const cantidadAdyTomados = response ['NAdy'];
-        this.state.sugerencia = JSON.stringify(listaN).replaceAll(',',"").replaceAll('[',"").replaceAll(']',"").replaceAll('"',"");
-        console.log(this.state.sugerencia, cantidadAdyTomados);
+        this.setState({
+          sugerencia: JSON.stringify(response['Ln']).replaceAll(',',"").replaceAll('[',"").replaceAll(']',"").replaceAll('"',""),
+          adyacentesSugerencia: response ['NAdy']
+        })
       }
     })
 
@@ -266,7 +267,7 @@ class Game extends React.Component {
                     key={color}
                   />)}
               </div>
-              <div><br></br><center><button 
+              <div><br></br><center><button className='boton'
                 style={{ backgroundColor: '#4CAF50',
                   fontSize: '16px',
                   color: 'White',
@@ -284,27 +285,40 @@ class Game extends React.Component {
                 <div className="turnsNum">{this.state.adyacentes}</div>
                 <div className='helpPanel'>
                 <div className="ayuda">
+                  <center>
                   <input id='cajaNum' type="number" min={1} style={{
                   borderColor: 'Black',
                   borderRadius: '5px',
                   textAlign: 'center'
                   }}></input>
+                  </center>
                 </div>
                 <div>
                 <center>
                   
-                  <button id='Ayuda' style={{ backgroundColor: '#FFFF99' ,
+                  <button className='boton' id='Ayuda' style={{ backgroundColor: '#FFFF99' ,
                       borderRadius: '5px',
                       textAlign: 'center',
-                    }}onClick={() =>  this.clickSugerenciaExponencial(document.getElementById('cajaNum').value)}>Sugerencia General</button> </center>
-                  <button id='profundidad'style={{ backgroundColor: '#FFFF99' ,
+                    }}onClick={() =>  this.clickSugerenciaExponencial(document.getElementById('cajaNum').value)}>Sugerencia General</button> 
+                 </center>
+                </div>
+                
+                <div>
+                <center>
+                <button className='boton' id='profundidad'style={{ backgroundColor: '#FFFF99' ,
                       borderRadius: '5px',
                       textAlign: 'center',
                     }}onClick={() =>  this.clickSugerenciaEnProfundidad(document.getElementById('cajaNum').value)}>Sugerencia Profundidad</button>
+                </center>
                 </div>
                 <br></br>
+                <div id='cantAdySug'>Adyacentes por sugerencia</div>
+                <center>
+                <div className="turnsNum">{this.state.adyacentesSugerencia}</div>
+                </center>
 
-                <div class="historialHelp">
+                <div class="historialHelp"></div>
+                <div class = "caja">
                   {this.state.sugerencia.split('').map((colorSugerencia) => 
                   <div 
                     style={{ backgroundColor: colorToCss(colorSugerencia),
@@ -354,7 +368,7 @@ class Game extends React.Component {
                     key={color}
                   />)}
               </div>
-              <div><br></br><center><button 
+              <div><br></br><center><button className='boton'
                 style={{ backgroundColor: '#4CAF50',
                   fontSize: '16px',
                   color: 'White',

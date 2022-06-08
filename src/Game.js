@@ -337,10 +337,11 @@ class Game extends React.Component {
               <div className="turnsPanel">
               <div className="adyacentesLab">Jugadas</div>
                 <div className="turnsNum">{this.state.turns}</div>
-                <div className="adyacentesLab">Adyacentes actuales</div>
+                <div className="adyacentesLab">Adyacentes capturados actualmente</div>
                 <div className="turnsNum">{this.state.adyacentes}</div>
                 <div className='helpPanel'>
                 <div className="ayuda">
+                <br></br>
                   <center>
                   <input id='cajaNum' type="number" min={1} style={{
                   borderColor: 'Black',
@@ -351,7 +352,6 @@ class Game extends React.Component {
                 </div>
                 <div>
                 <center>
-                  
                   <button className='boton' id='Ayuda' style={{ backgroundColor: '#FFFF99' ,
                       borderRadius: '5px',
                       textAlign: 'center',
@@ -440,7 +440,7 @@ class Game extends React.Component {
               <div className="adyacentesLab" style={{color: 'green'}}>Juego completado!</div>
                 <div className="adyacentesLab"><br></br>Jugadas</div>
                 <div className="turnsNum">{this.state.turns}</div>
-                <div className="adyacentesLab">Adyacentes actuales</div>
+                <div className="adyacentesLab">Adyacentes capturados actualmente</div>
                 <div className="turnsNum">{this.state.adyacentes}</div>
                 <div className="adyacentesLab"><br></br>Historial de jugadas</div>
                 <div class="caja">

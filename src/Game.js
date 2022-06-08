@@ -176,6 +176,11 @@ class Game extends React.Component {
 
   clickSugerenciaEnProfundidad(numero){
     
+    if (this.state.waiting) {
+        alert("Se está calculando la sugerencia, espera por favor...");
+       return;
+     }
+
     const gridS = JSON.stringify(this.state.grid).replaceAll('"', "");
     console.log(numero);
     
@@ -183,17 +188,27 @@ class Game extends React.Component {
 
     const filacons = this.state.origenFila;
     const columnacons = this.state.origenColumna;
+    this.setState({
+      waiting: true
+    });
     //sugerirNVeces(M, (C,I,J), N, Ln, NAdy):- LA MATRIZ DEBERIA LLAMARLA COMO UNA LISTA DE LISTAS
     const querySugerir = "sugerirNVeces("+ gridS + ",("+ this.state.origenColor + "," +filacons+ "," +columnacons+"),"+numero+", Ln, NAdy)";
     //console.log(querySugerir); esta bien
     console.log(this.state.jugadas);
 
+    
+
     this.pengine.query(querySugerir, (success, response) => {
       if(success){
         this.setState({
           sugerencia: JSON.stringify(response['Ln']).replaceAll(',',"").replaceAll('[',"").replaceAll(']',"").replaceAll('"',""),
-          adyacentesSugerencia: response ['NAdy']
+          adyacentesSugerencia: response ['NAdy'],
+          waiting: false
         })
+      } else {
+        this.setState({
+          waiting: false
+        });
       }
     })
 
@@ -201,6 +216,10 @@ class Game extends React.Component {
 
   clickSugerenciaExponencial(numero){
     
+    if (this.state.waiting) {
+      alert("Se está calculando la sugerencia, espera por favor...");
+     return;
+   }
     const gridS = JSON.stringify(this.state.grid).replaceAll('"', "");
     console.log(numero);
     
@@ -209,16 +228,24 @@ class Game extends React.Component {
     const filacons = this.state.origenFila;
     const columnacons = this.state.origenColumna;
     //buscarSecuencia(+M, +(C,I,J), +N, -L, -NAdy) LA MATRIZ DEBERIA LLAMARLA COMO UNA LISTA DE LISTAS
+    this.setState({
+      waiting: true
+    });
     const querySugerir = "buscarSecuencia("+ gridS + ",("+ this.state.origenColor + "," +filacons+ "," +columnacons+"),"+numero+", Ln, NAdy)";
     //console.log(querySugerir); esta bien
     console.log(this.state.jugadas);
-
+    
     this.pengine.query(querySugerir, (success, response) => {
       if(success){
         this.setState({
           sugerencia: JSON.stringify(response['Ln']).replaceAll(',',"").replaceAll('[',"").replaceAll(']',"").replaceAll('"',""),
-          adyacentesSugerencia: response ['NAdy']
+          adyacentesSugerencia: response ['NAdy'],
+          waiting: false
         })
+      } else {
+        this.setState({
+          waiting: false
+        });
       }
     })
 
@@ -328,7 +355,7 @@ class Game extends React.Component {
                   <button className='boton' id='Ayuda' style={{ backgroundColor: '#FFFF99' ,
                       borderRadius: '5px',
                       textAlign: 'center',
-                    }}onClick={() =>  this.clickSugerenciaExponencial(document.getElementById('cajaNum').value)}>Sugerencia General</button> 
+                    }}onClick={() =>  this.clickSugerenciaExponencial(document.getElementById('cajaNum').value)}>Sugerencia exponencial (5^n)</button> 
                  </center>
                 </div>
                 
@@ -337,11 +364,11 @@ class Game extends React.Component {
                 <button className='boton' id='profundidad'style={{ backgroundColor: '#FFFF99' ,
                       borderRadius: '5px',
                       textAlign: 'center',
-                    }}onClick={() =>  this.clickSugerenciaEnProfundidad(document.getElementById('cajaNum').value)}>Sugerencia Profundidad</button>
+                    }}onClick={() =>  this.clickSugerenciaEnProfundidad(document.getElementById('cajaNum').value)}>Sugerencia local</button>
                 </center>
                 </div>
                 <br></br>
-                <div id='cantAdySug'>Adyacentes por sugerencia</div>
+                <div id='cantAdySug'>Celdas extras capturadas al finalizar la secuencia</div>
                 <center>
                 <div className="turnsNum">{this.state.adyacentesSugerencia}</div>
                 </center>

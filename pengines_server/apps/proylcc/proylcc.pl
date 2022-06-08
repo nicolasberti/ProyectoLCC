@@ -3,7 +3,7 @@
 		flick/4,
 		cantidadAdyacentes/3,
 		gano/1,
-        	sugerirNVeces/5,
+        sugerirNVeces/5,
 		buscarSecuencia/5
 	]).
 
@@ -13,6 +13,7 @@
 :- dynamic esAdy/1. % true sssi un nodo es adyacente transitivo de una celda origen.
 :- dynamic adyacentesAPintar/1.
 :- dynamic ganoJuego/0.
+:- dynamic colorAdy/1.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -24,6 +25,12 @@
 flick(Grid, Color, FGrid, (C, I, J)):-
 	Color \= C,
     pintarAdyacentes(Grid, Color, (C, I, J), FGrid), !.
+
+% Flick auxiliar para calcular las secuencias de manera eficiente.
+flickAux(Grid, Color, FGrid, (C, I, J), Long):-
+	Color \= C,
+    pintarAdyacentesAux(Grid, Color, (C, I, J), FGrid, Long), !.
+
 
 % En este codigo no se usa a 0 como el primer elemento, si no a 1.
 % Esto por convención en prolog ya que el primer elemento de una lista es el indice 1 y no 0.
@@ -39,6 +46,13 @@ miembro(M, (C,I,J)):-
 pintarAdyacentes(M, Cn, (C,I,J), Mn):-
     adyacentes(M, (C,I,J), Ln),
     pintar(M, Cn, Ln, Mn).
+
+% Pintar adyacentes auxiliar para calcular las secuencias de manera eficiente.
+pintarAdyacentesAux(M, Cn, (C,I,J), Mn, Long):-
+    adyacentesNuevo(M, (C,I,J), Ln),
+    pintar(M, Cn, Ln, Mn),
+    adyacentesNuevo(Mn, (C,I,J), Ln2), % Si bien se calculan 2 veces los adyacentes, no hace ineficiente al algoritmo.
+    length(Ln2, Long).
 
 % Pinta todos los adyacentes contenidos en una lista L = [(C,I,J) | Ls] en la matriz M del color Cn
 % Mn es la lista con los colores pintados
@@ -222,17 +236,19 @@ colorMayor((C,X), (C1,Y), [(_,Z)|Zs]):-
           colorMayor((C,X), (C1,Y), Zs).
 
 
-
-% Estrategia pedida.
+% Estrategia pedida. 5^n
 
 buscarSecuencia(M, (C,I,J), N, L, NAdy):-
     buscarSugerencias(M, (C,I,J), N, Ln),
     cantidadAdyacentes(M, (C,I,J), NAdyAux),
     mejorSecuencia(Ln, LAux),
-	last(LAux, X),
+	maplist(mapear, LAux, L), % LAux es una lista del estilo [(C1,N1), (C2,N2), ..., (Cn, Nn)]. Cn es el color de la secuencia, y Nn es el número de ady capturados.
+	last(LAux, (_,X)),
     NAdy #= X - NAdyAux,
-	delete(LAux, X, L),
     retractall(ganoJuego).
+
+% Devuelve el primer elemento de un par. X=(Y,Z).
+mapear((Y,_), Y).
 
 % Busca cual es la mejor secuencia
 % hay 2 alternativas
@@ -265,14 +281,14 @@ mayorLista([L1 | Xs], L):-
     mayorListaAux(L, L1, Xs).
 mayorListaAux(L, L, []):- !.
 mayorListaAux(L, L1, [L2 | Zs]):-
-    last(L1, X),
-    last(L2, Y),
+    last(L1, (_,X) ),
+    last(L2, (_,Y) ),
     X >= Y,
     !,
     mayorListaAux(L, L1, Zs).
 mayorListaAux(L, L1, [L2 | Zs]):-
-    last(L1, X),
-    last(L2, Y),
+    last(L1, (_,X) ),
+    last(L2, (_,Y) ),
     X < Y,
     !,
     mayorListaAux(L, L2, Zs).
@@ -281,14 +297,78 @@ mayorListaAux(L, L1, [L2 | Zs]):-
 buscarSugerencias(M, (C,I,J), N, Ln):-
 	findall(X, sugerenciaN(M, (C,I,J), N, X), Ln).
 
-sugerenciaN(M, (C,I,J), 0, [Y]):-
-    cantidadAdyacentes(M, (C,I,J), Y).
-sugerenciaN(M, (C,I,J), N, [Y]):-
-    N>0, gano(M), assert(ganoJuego), 
-    cantidadAdyacentes(M, (C,I,J), Y), !.
-sugerenciaN(M, (C,I,J), N, [X | Ln]):-
+sugerenciaN(_, _, 0, []).
+sugerenciaN(M, _, N, []):-
+    N>0, gano(M), assert(ganoJuego), !.
+sugerenciaN(M, (C,I,J), N, [(X,Long) | Ln]):- % Los elementos de la secuencia tienen el formato (C,N) donde C es el color N los adyacentes capturados (es decir, cantidadAdyacentes).
     N>0, not(gano(M)), not(ganoJuego), !, % Agregar not(ganoJuego) mejora la eficiencia cortando cuando encontró una secuencia que gana el juego.
     ( X=r; X=g; X=y; X=b; X=p; X=v ),
     N1 #= N-1,
-    flick(M, X, Mn, (C,I,J)),
+    flickAux(M, X, Mn, (C,I,J), Long),
     sugerenciaN(Mn, (X,I,J), N1, Ln).
+
+/*
+ * ############### Algoritmo de la catedra ###############
+ * 
+ * Mas allá de que nuestro algoritmo es eficiente y adopta la misma estrategia,
+ * con algoritmo brindado por la catedra, el sugerenciaN se hace mucho más eficiente.
+ * 
+ * #######################################################
+ */
+
+adyacentesNuevo(M, (C,I1,J1), Ln):-
+    I is I1-1, % Nosotros usamos el formato [1,1] a [14,14] -> La catedra usa [0,0] a [13,13]
+    J is J1-1,
+    adyCStar(C, [I,J], M, Ln).
+
+adyCStar(Color, Origin, Grid, Ln) :-
+    adyCStarSpread([Origin], [], Grid, Res),
+    assert( colorAdy(Color) ),
+    maplist(convertirCeldas, Res, LnAux), % La catedra usa el formato [I,J] nosotros usamos (C,I,J)
+    maplist(sucesor, LnAux, Ln), % Mapeo el sucesor de I,J por la razón mencionada en adyacentesNuevo.
+    retractall(colorAdy(_)).
+
+% Funciones mapeadoras
+convertirCeldas(X, Y):-
+    X= [I,J],
+    colorAdy(Color),
+    Y = (Color, I, J).
+sucesor( (C,X,Y), (C,I,J) ):-
+    I is X+1,
+    J is Y+1.
+%-------
+
+adyCStarSpread([], Vis, _Grid, Vis).
+adyCStarSpread(Pend, Vis, Grid, Res):-
+    Pend = [P|Ps],
+    findall(A, 
+	        (
+    	        adyC(P, Grid, A),
+        	    not(member(A, Pend)),
+            	not(member(A, Vis))
+	        ), 
+            AdyCP),
+    append(AdyCP, Ps, NPend),
+    adyCStarSpread(NPend, [P|Vis], Grid, Res).
+adyC(P, Grid, A):-
+    ady(P, Grid, A),
+    color(P, Grid, C),
+    color(A, Grid, C).
+ady([X, Y], Grid, [X1, Y]):-
+    length(Grid, L),
+    X < L - 1,
+    X1 is X + 1.
+ady([X, Y], _Grid, [X1, Y]):-
+    X > 0,
+    X1 is X - 1.
+ady([X, Y], Grid, [X, Y1]):-
+    Grid = [F|_],
+    length(F, L),
+    Y < L - 1,
+    Y1 is Y + 1.
+ady([X, Y], _Grid, [X, Y1]):-
+    Y > 0,
+    Y1 is Y - 1.
+color([X,Y], Grid, C):-
+    nth0(X, Grid, F),
+    nth0(Y, F, C). 

@@ -43,7 +43,8 @@ class Game extends React.Component {
       waiting: false,
       selecciono: false, // true si selecciono la celda de origen
       sugerencia: "", // String para el historial de sugerencias
-      adyacentesSugerencia: 0 //Cantidad de adyacentes que toma a partir de una sugerencia
+      adyacentesSugerencia: 0,//Cantidad de adyacentes que toma a partir de una sugerencia
+      cantidadAnterior: 0 //Cantidad de adyacentes anterior, para calcular el valor de la sugerencia(si es necesario hacerlo)
     };
     this.handleClick = this.handleClick.bind(this);
     this.handlePengineCreate = this.handlePengineCreate.bind(this);
@@ -142,7 +143,35 @@ class Game extends React.Component {
           waiting: false
         });
       }
+
+      if(this.state.sugerencia != ""){
+        console.log(color);
+        if(this.state.sugerencia.charAt(0) == color){
+          const subAdy = this.state.sugerencia.substring(1);
+          const cantAux = this.state.adyacentes - this.state.cantidadAnterior;
+          const cantActual = this.state.adyacentesSugerencia - cantAux;
+          console.log(this.state.cantidadAnterior)
+          console.log(cantActual+": actualizada")
+          this.setState({
+            sugerencia: subAdy
+          })
+          if(this.state.sugerencia == ""){
+            this.setState({
+              adyacentesSugerencia: 0
+            })
+          }else{
+              
+          }
+        }else{
+          this.setState({
+            sugerencia: "",
+            adyacentesSugerencia: 0
+          })
+        }
+      }
+
     });
+    this.setState.cantidadAnterior = this.state.adyacentes;
   }
 
   clickSugerenciaEnProfundidad(numero){

@@ -3,7 +3,7 @@
 		flick/4,
 		cantidadAdyacentes/3,
 		gano/1,
-        sugerirNVeces/5,
+        	sugerirNVeces/5,
 		buscarSecuencia/5
 	]).
 
@@ -13,7 +13,7 @@
 :- dynamic esAdy/1. % true sssi un nodo es adyacente transitivo de una celda origen.
 :- dynamic adyacentesAPintar/1.
 :- dynamic ganoJuego/0.
-:- dynamic colorAdy/1.
+:- dynamic colorAdy/1. % Predicado dinámico que se utiliza para adaptar el algoritmo de la cátedra a nuestro proyecto
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -143,27 +143,43 @@ adyacentes(M, (C,I,J), Ln):-
     retractall(visitado(_)).	
 
 % Estrategia local.
+/*
+ * Explicación: la base es el sugerir. Se calculan los adyacentesC a la celda origen, se buscan las celdas "borde" a dichos adyacentes y se marcan.
+ * a cada "celda borde" se buscan sus adyacentesC y se marcan. 
+ * El color de celda que más se repita, esto se calcula con la cantidad de celdas marcadas con X color, será la sugerencia.
+ * sugerirNVeces va creando la lista de sugerencia de longitud N (o menor si gana el juego) simulando pintar con el color previamente sugerido.
+ *
+ */
+
+% sugerirNVeces(+M, +(C,I,J), +N, -Ln, -NAdy)
+% Recibe una grilla M, una celda origen (C,I,J) y una longitud N, y retorna una lista de longitud N o menor si es que gana el juego
+% llamada Ln que contendrá la sugerencia que capture más celdas. NAdy son las celdas extras que se capturan después de ejecutar dicha secuencia.
 sugerirNVeces(M, (C,I,J), N, Ln, NAdy):-
     cantidadAdyacentes(M, (C,I,J), NAdy1),
     sugerirNVecesAux(M, (C,I,J), N, Ln, NAdy2),
     NAdy is (NAdy2 - NAdy1). 
 
-% Habria que ver si hay mas casos bases en los cuales se termine la ejecucion del sugerir.
+% Método auxiliar para ejecutar sugerirNVeces.
+% Pide una sugerencia de color (esto es, el predicado sugerir) y va pintando por el color sugerido.
+% Corta cuando llega al N (Ln de longitud N) o si gana antes con la secuencia.
+% OBS: En este caso NAdy es la cantidad de adyacentes TOTALES a finalizar la secuencia.
+% sugerirNVecesAux(+M, +(C,I,J), +N, Ln, NAdy).
 sugerirNVecesAux(M, (C,I,J), 0, [], NAdy2):-
     cantidadAdyacentes(M, (C,I,J), NAdy2).
-
-% A partir de la matriz M, la celda origen, y una cantidad N de sugerencias. Ln es una lista con N sugerencias de colores
-% sugerirNVecesAux(+M, +(C,I,J), +N, -Ln)
 sugerirNVecesAux(M, (C,I,J), N, [X | Ln], NAdy2):-
 	sugerir(M, (C, I, J), X), % me devuelve un color X a pintar que seria el de mayor long de colores
 	flick(M, X, Mn, (C, I, J)), % si el color X es el mismo al color C, entonces no sugiere mas colores, por lo tanto termina de realizar las iteraciones (creo)
 	Ni is N - 1,
-	sugerirNVecesAux(Mn, (X,I,J), Ni, Ln, NAdy2), !. % Agrego ! a lo ultimo para q considere la unica rama
-
-% Predicado de corte si N es mayor q la cantidad de secuencia de colores
+	sugerirNVecesAux(Mn, (X,I,J), Ni, Ln, NAdy2), !.
 sugerirNVecesAux(M, (C,I,J), _, [], NAdy2):-
 	gano(M), cantidadAdyacentes(M, (C,I,J), NAdy2).
 
+% Método principal que sugiere un color según una matriz y una celda origen.
+% X es el color sugerido. 
+% Obtiene las celdas borde de los adyacentesC de una celda origen, las marca como adyacentesAPintar
+% después busca los adyacentesC de cada celda de la lista borde y los marca como adyacentesAPintar
+% busca las 6 listas de los 6 colores, y la que tenga mayor longitud es el color sugerido a pintar.
+% sugerir(+M, +(C,I,J), -X).
 sugerir(M, (C,I,J), X):-
     adyacentes(M, (C,I,J), L),
     listaBorde(M, L, [], LBorde),
@@ -186,20 +202,24 @@ sugerir(M, (C,I,J), X):-
     LN = [ (r,NRojo), (g,NVerde), (b,NAzul), (y, NAmarillo), (v, NVioleta), (p, NRosa) ],
     colorMayor((X,_), LN), !.
     
-
+% Busca y marca los adyacentesC de todas las celdas de la borde origen
+% buscarAdyacentes(+M, +Ln)
 buscarAdyacentes(_, []):- !.
 buscarAdyacentes(M, [(C,I,J) | Ls]):-
     adyacentes(M, (C,I,J), L),
     marcarAdyacente(L),
     buscarAdyacentes(M, Ls).
     
-    
+% true sssi X=(I1,J1), Y=(I2,J2) son adyacentes.
+% ady(+X, +Y)
 ady( (I1,J1), (I2,J2) ):-
     ( I1 #= I2+1, J1#=J2 );
     ( I1 #= I2-1, J1#=J2 );
     ( J1 #= J2+1, I1#=I2 );
     ( J1 #= J2-1, I1#=I2 ).
     
+% Busca todos los adyacentes (esto es, el predicado ady) de distinto color a la celda (C1,I1,J1).
+% adyDistintoColor(+M, +(C1,I1,J1), -Ln).
 adyDistintoColor(M, (C1,I1,J1), Ln):-
    	findall((C2,I2,J2), 
             (
@@ -208,6 +228,10 @@ adyDistintoColor(M, (C1,I1,J1), Ln):-
               C2\=C1 % No considera los adyacentes del mismo color.
             ), Ln).
 
+% Busca todos las celdas bordes a los adyacentesC de una celda origen
+% listaBorde(+M, +L, +Actuales, -Nuevo).
+% Actuales se llama con vacio tal que no tiene en principio celdas.
+% Nuevo es las celdas que devuelve.
 listaBorde(_, [], Actuales, Actuales).
 listaBorde(M, [(C1,I1,J1) | Ls], Actuales, Nuevos):-
     adyDistintoColor(M, (C1,I1,J1), Ln),
@@ -215,6 +239,8 @@ listaBorde(M, [(C1,I1,J1) | Ls], Actuales, Nuevos):-
     listaBorde(M, Ls, ActualesLn, Nuevos), !.
 
 
+% marcarAdyacente(+Ln)
+% Marca todas las celdas de una lista Ln como adyacentesAPintar
 marcarAdyacente([]):- !.
 marcarAdyacente([(C,I,J) | Ls]):-
     not( adyacentesAPintar((C,I,J)) ),
@@ -223,7 +249,7 @@ marcarAdyacente([(C,I,J) | Ls]):-
 marcarAdyacente([(_,_,_) | Ls]):- % En caso de que esté repetido, no lo marca.
     marcarAdyacente(Ls).
 
-
+% colorMayor(-(C,M), +L): devuelve el mayor color (mayor en terminos de M como entero) de una lista L de celdas del estilo (C,M) C es un color, M un entero. 
 colorMayor((C, M), [(C1, X)|Xs]):-
           colorMayor((C,M), (C1,X), Xs).
 colorMayor((C,M), (C,M), []):- !.
@@ -238,6 +264,20 @@ colorMayor((C,X), (C1,Y), [(_,Z)|Zs]):-
 
 % Estrategia pedida. 5^n
 
+% Explicación de todo el algoritmo
+/*
+ * La base del algoritmo es el predicado sugerenciaN
+ * Según las condiciones dadas (si no gana el juego, y el N ingresado es mayor que 0), 
+ * establece un color X y va agregando a la lista Ln de secuencias el color con las celdas capturadas en dicha "pintada".
+ * Esto lo que hace es que despues al ejecutar el findall con un N se generan por fuerza bruta todas las posibles secuencias es decir,
+ * 5^N secuencias y después mediante otros predicados según las adyacentes capturados se establece cual es la mejor secuencia.
+ */
+ 
+% buscarSecuencia(+M, +(C,I,J), +N, -L, -NAdy):
+% Busca la mejor secuencia que capture más adyacentes de la grilla M con celda origen (C,I,J) de longitud N o menor (si gana con una secuencia con menor N)
+% y la retorna en L. NAdy es el número de celdas EXTRAS que se capturan con esa secuencia
+% OBS para todo el documento: cuando nos referimos a "celdas EXTRAS NAdy" es (Total de AdyC a celda origen después de pintar por la secuencia) = 
+% (Total de AdyC a celda origen antes de pintar por la secuencia) + NAdy.
 buscarSecuencia(M, (C,I,J), N, L, NAdy):-
     buscarSugerencias(M, (C,I,J), N, Ln),
     cantidadAdyacentes(M, (C,I,J), NAdyAux),
@@ -250,6 +290,7 @@ buscarSecuencia(M, (C,I,J), N, L, NAdy):-
 % Devuelve el primer elemento de un par. X=(Y,Z).
 mapear((Y,_), Y).
 
+% mejorSecuencia(+Ln, -L).
 % Busca cual es la mejor secuencia
 % hay 2 alternativas
 % 1. Ganó el juego, se debe encontrar a la lista con menor length en Ln
@@ -261,6 +302,8 @@ mejorSecuencia(Ln, L):-
     not(ganoJuego), !, 
     mayorLista(Ln, L).
 
+% menorLista(+LL, -L):
+% Devuelve la lista L contenida dentro de la lista de listas LL que tenga menor longitud.
 menorLista([L1 | Xs], L):-
     menorListaAux(L, L1, Xs).
 menorListaAux(L, L, []):- !.
@@ -277,6 +320,10 @@ menorListaAux(L, L1, [L2 | Zs]):-
     !,
     menorListaAux(L, L2, Zs).
 
+% Retorna la mayor lista teniendo en cuenta el numero Z del ultimo elemento de la lista
+% Esto es, recibe una lista de listas del estilo [(_, X), (_, Y), .., (_, Z)]
+% Entonces, L será la lista con last(L, (_,Z)): Z mayor que todos los last de todas las otras listas de la lista.
+% mayorLista(+LL, -L): LL es una lista de listas. Array 2D.
 mayorLista([L1 | Xs], L):-
     mayorListaAux(L, L1, Xs).
 mayorListaAux(L, L, []):- !.
@@ -294,9 +341,15 @@ mayorListaAux(L, L1, [L2 | Zs]):-
     mayorListaAux(L, L2, Zs).
 
 % Código base para encontrar secuencias de longitud N (o menor si gana el juego)
+% Encuentra TODAS las secuencias de longitud N.
+% OBS: El algoritmo corta si encuentra una secuencia con la que gana el juego, por ende
+% puede haber en principios secuencias de longitud N y la última será de una longitud N o bien menor porque cortó el algoritmo.
 buscarSugerencias(M, (C,I,J), N, Ln):-
 	findall(X, sugerenciaN(M, (C,I,J), N, X), Ln).
 
+% sugerenciaN(+M, +(C,I,J), +N, -Ln)
+% Devuelve una lista del estilo [(Color, adyacentes capturados con flick por este color), (Color, ady...)] de longitud N o menor (si es que gana el juego mientras va pintando) 
+% apartir de una grilla M y una celda origen (C,I,J) y una longitud N.
 sugerenciaN(_, _, 0, []).
 sugerenciaN(M, _, N, []):-
     N>0, gano(M), assert(ganoJuego), !.

@@ -145,13 +145,10 @@ class Game extends React.Component {
       }
 
       if(this.state.sugerencia != ""){
-        console.log(color);
         if(this.state.sugerencia.charAt(0) == color){
           const subAdy = this.state.sugerencia.substring(1);
           const cantAux = this.state.adyacentes - this.state.cantidadAnterior;
           const cantActual = this.state.adyacentesSugerencia - cantAux;
-          console.log(this.state.cantidadAnterior)
-          console.log(cantActual+": actualizada")
           this.setState({
             sugerencia: subAdy
           })
@@ -182,21 +179,15 @@ class Game extends React.Component {
      }
 
     const gridS = JSON.stringify(this.state.grid).replaceAll('"', "");
-    console.log(numero);
-    
-    console.log(gridS);
-
     const filacons = this.state.origenFila;
     const columnacons = this.state.origenColumna;
+
     this.setState({
       waiting: true
     });
     //sugerirNVeces(M, (C,I,J), N, Ln, NAdy):- LA MATRIZ DEBERIA LLAMARLA COMO UNA LISTA DE LISTAS
     const querySugerir = "sugerirNVeces("+ gridS + ",("+ this.state.origenColor + "," +filacons+ "," +columnacons+"),"+numero+", Ln, NAdy)";
-    //console.log(querySugerir); esta bien
-    console.log(this.state.jugadas);
 
-    
 
     this.pengine.query(querySugerir, (success, response) => {
       if(success){
@@ -221,19 +212,14 @@ class Game extends React.Component {
      return;
    }
     const gridS = JSON.stringify(this.state.grid).replaceAll('"', "");
-    console.log(numero);
-    
-    console.log(gridS);
-
     const filacons = this.state.origenFila;
     const columnacons = this.state.origenColumna;
+
     //buscarSecuencia(+M, +(C,I,J), +N, -L, -NAdy) LA MATRIZ DEBERIA LLAMARLA COMO UNA LISTA DE LISTAS
     this.setState({
       waiting: true
     });
     const querySugerir = "buscarSecuencia("+ gridS + ",("+ this.state.origenColor + "," +filacons+ "," +columnacons+"),"+numero+", Ln, NAdy)";
-    //console.log(querySugerir); esta bien
-    console.log(this.state.jugadas);
     
     this.pengine.query(querySugerir, (success, response) => {
       if(success){
@@ -265,9 +251,7 @@ class Game extends React.Component {
 
       // Calcula la cantidad de adyacentes que hay después de pintar
       const gridNueva = JSON.stringify(this.state.grid).replaceAll('"', "");
-      console.log(gridNueva);
       const queryAdyacentes = "cantidadAdyacentes(" + gridNueva + "," +"("+c+","+ (i+1) +","+ (j+1) +"), N)"; 
-      console.log(queryAdyacentes);
       this.setState({
         waiting: true
       });

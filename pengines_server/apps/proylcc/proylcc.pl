@@ -48,6 +48,8 @@ pintarAdyacentes(M, Cn, (C,I,J), Mn):-
     pintar(M, Cn, Ln, Mn).
 
 % Pintar adyacentes auxiliar para calcular las secuencias de manera eficiente.
+% Aca se implementa el adyC* de la catedra. Para comparar el tiempo que tarda con nosotros simplemente cambiar los 2 predicados
+% "adyacentesNuevo" por "adyacentes".
 pintarAdyacentesAux(M, Cn, (C,I,J), Mn, Long):-
     adyacentesNuevo(M, (C,I,J), Ln),
     pintar(M, Cn, Ln, Mn),
